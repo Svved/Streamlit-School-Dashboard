@@ -1,100 +1,13 @@
 import streamlit as st
 import plotly.graph_objects as go
 import pandas as pd
-import datetime
-import time
+from funzioni import *
+from dbconnector import *
 
 # Set the page configuration to wide mode
 st.set_page_config(layout="wide")
 
 @st.cache_data
-def convert_to_float_hours(time_str):
-    # Split the time string into parts
-    time_parts = time_str.split(':')
-    
-    # Handle HH:MM:SS (3 parts) and HH:MM (2 parts)
-    if len(time_parts) == 3:  # HH:MM:SS
-        hours, minutes, seconds = map(int, time_parts)
-    elif len(time_parts) == 2:  # HH:MM
-        hours, minutes = map(int, time_parts)
-        seconds = 0  # Default seconds to 0
-    else:
-        return None  # Handle unexpected format
-    
-    # Calculate total hours as a float
-    total_hours = hours + minutes / 60 + seconds / 3600
-    return total_hours
-
-def get_calendar1():
-    # 1°anno
-    # data import
-    data = pd.read_csv('./data/Calendario AI&DS - biennio 2023-25 - Calendario 1° anno.csv', skiprows=3).dropna()
-    data.drop(columns=['Dalle', 'Alle', 'Dettagli'], inplace=True)
-    data.rename(columns={'Formatore (ROL)': 'Docente', 'Tot. Ore': 'ore', 'Data': 'data'}, inplace=True)
-    # Apply the conversion function to the 'ore' column
-    data['ore'] = data['ore'].apply(convert_to_float_hours)
-    return data
-
-def get_calendar():  # Load data
-    data = pd.read_csv('./data/Calendario AI&DS - biennio 2023-25 - Calendario 2° anno.csv', skiprows=7)
-    data = data.dropna()
-    data.rename(columns={'Orario': 'inizio', 'Unnamed: 3': 'fine'}, inplace=True)
-    data['Modulo'] = data['Modulo'].astype('int')
-    data['inizio'] = data['inizio'].str.replace(',', '.').astype(float)
-    data['fine'] = data['fine'].str.replace(',', '.').astype(float)
-    data['Ore'] = data['Ore'].str.replace(',', '.').astype(float)
-    data['Data'] = pd.to_datetime(data['Data'], format='%d/%m/%Y')
-    return data
-
-def get_grades():  # Load data
-    data = pd.read_excel('./data/Valutazioni_Presenze.xlsx', sheet_name='Valutazioni', skiprows=3)[:-2]
-    unnamed = []
-    for col in data.columns:
-        if col.startswith('Unnamed'):
-            unnamed.append(col)
-    data.drop(columns=unnamed, inplace=True)
-    data.set_index('Cognome Nome', drop=True, inplace=True)
-    return data
-
-def get_absences():
-    data = pd.read_excel('data/Valutazioni_Presenze.xlsx', sheet_name='Presenze', skiprows=2)[:-2]
-    data.set_index('Cognome Nome', drop=True, inplace=True)
-    return data
-
-def countdown_timer(target_date):
-    """Function to display a countdown timer."""
-    countdown_placeholder = st.empty()  # Create a placeholder for the countdown
-
-    while True:
-        # Get the current time
-        now = datetime.datetime.now()
-        
-        # Calculate the time remaining
-        time_remaining = target_date - now
-        
-        # Check if the countdown has finished
-        if time_remaining.total_seconds() <= 0:
-            countdown_placeholder.write("Countdown finished!")
-            break
-        
-        # Format the time remaining
-        days, seconds = time_remaining.days, time_remaining.seconds
-        hours = seconds // 3600
-        minutes = (seconds % 3600) // 60
-        seconds = seconds % 60
-        
-        # Display the countdown
-        countdown_placeholder.write(f"Time remaining until {target_date.strftime('%Y-%m-%d')}:")
-        countdown_placeholder.write(f"{days} days, {hours:02}:{minutes:02}:{seconds:02}")
-        
-        # Wait for 1 second before updating
-        time.sleep(1)
-
-# Set the target date for the countdown
-#target_date = datetime.datetime(2025, 7, 17)
-
-# Start the countdown timer
-#countdown_timer(target_date)
 
 try:
     tab1, tab2, tab3 = st.tabs(["Lezioni", "Valutazioni", "ITS's Heroes"])
