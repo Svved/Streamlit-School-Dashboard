@@ -95,7 +95,16 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
     ))
     
     # Add reference line if specified
-    if ref_line is not None:
+    if ref_line is not None and ref_line == 0.8:
+        fig.add_trace(go.Scatter(
+            x=df[x_col],
+            y=[ref_line] * len(df),
+            mode='lines',
+            name=f'Limite ({ref_line})',
+            line=dict(color='red', dash='dash'),
+            opacity=0.80
+        ))
+    elif ref_line is not None:
         fig.add_trace(go.Scatter(
             x=df[x_col],
             y=[ref_line] * len(df),
@@ -104,6 +113,7 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
             line=dict(color='yellow', dash='dash'),
             opacity=0.80
         ))
+    
     
     max_value = df[y_col].max()
     

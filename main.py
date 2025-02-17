@@ -204,7 +204,7 @@ try:
             st.plotly_chart(fig_absences, use_container_width=True, height=700)
         with col2:
             st.header('')
-            st.dataframe(percentuale_assenze,  width=400,height=700)
+            st.dataframe(percentuale_assenze,  width=400,height=500)
 
         st.divider()
         
