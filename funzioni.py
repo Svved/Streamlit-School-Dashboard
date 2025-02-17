@@ -100,8 +100,9 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
             x=df[x_col],
             y=[ref_line] * len(df),
             mode='lines',
-            name=f'Critical ({ref_line})',
-            line=dict(color='red', dash='dash'),
+            name=f'Media ({ref_line})',
+            line=dict(color='yellow', dash='dash'),
+            opacity=0.80
         ))
     
     max_value = df[y_col].max()
@@ -114,13 +115,18 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
         height=600,
         xaxis={'tickangle': 45},
         showlegend=True,  # Show legend for reference line
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.75
+        ),
         margin=dict(t=50, b=50, l=50, r=50),
     )
     
     # Add more padding above the highest bar to prevent label cutoff
     fig.update_yaxes(range=[0, max_value + (max_value * 0.1)])
     return fig
-
 
 def create_student_grade_chart(student_grades):
     """Create a bar chart for individual student grades"""
@@ -152,9 +158,10 @@ def create_student_grade_chart(student_grades):
         y=[mean_grade] * len(df),
         mode='lines',
         name=f'Media ({mean_grade:.2f})',
-        line=dict(color='red', dash='dash'),
+        line=dict(color='yellow', dash='dash'),
+        opacity=0.80
     ))
-    
+
     max_value = df['Voto'].max()
     
     fig.update_layout(
@@ -166,6 +173,12 @@ def create_student_grade_chart(student_grades):
         height=600,
         xaxis={'tickangle': 45},
         showlegend=True,  # Show legend to display mean line label
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.95
+        ),
         margin=dict(t=50, b=50, l=50, r=50),
     )
     
