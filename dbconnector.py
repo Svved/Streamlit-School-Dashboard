@@ -1,6 +1,8 @@
+import streamlit as st
 import pandas as pd
 from funzioni import *
 
+@st.cache_data
 def get_calendar1():
     # 1°anno
     # data import
@@ -26,7 +28,7 @@ def get_grades():  # Load data
     data = pd.read_excel('./data/Valutazioni_Presenze.xlsx', sheet_name='Valutazioni', skiprows=3)[:-2]
     unnamed = []
     for col in data.columns:
-        if col.startswith('Unnamed'):
+        if (col.startswith('Unnamed')):
             unnamed.append(col)
     data.drop(columns=unnamed, inplace=True)
     data.set_index('Cognome Nome', drop=True, inplace=True)
@@ -35,4 +37,5 @@ def get_grades():  # Load data
 def get_absences():
     data = pd.read_excel('data/Valutazioni_Presenze.xlsx', sheet_name='Presenze', skiprows=2)[:-2]
     data.set_index('Cognome Nome', drop=True, inplace=True)
+    data = data.dropna()
     return data

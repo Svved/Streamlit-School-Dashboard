@@ -7,8 +7,6 @@ from dbconnector import *
 # Set the page configuration to wide mode
 st.set_page_config(layout="wide")
 
-@st.cache_data
-
 try:
     tab1, tab2, tab3 = st.tabs(["Lezioni", "Valutazioni", "ITS's Heroes"])
     # Data ETL
@@ -56,7 +54,6 @@ try:
             height=600
         )
         
-        
         tab1.plotly_chart(fig)
         tab1.divider()
 
@@ -103,25 +100,48 @@ try:
         percentuale_assenze = absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index()
         percentuale_assenze.columns = ['Studente', '% Assenze']  # Rename columns
 
-        # Create three columns for side-by-side display
-        col1, col2, col3 = tab2.columns([3, 3, 3])
-        # Display the first DataFrame in the first column
+        # Create visualizations using the new function
+        col1, col2 = tab2.columns([3,1])
         with col1:
             st.header('Media Voti Studenti')
-            st.dataframe(mean_grades_students, width=500)
-
-        # Display the second DataFrame in the second column
+            fig_students = create_bar_chart(mean_grades_students, 'Studente', 'Media Voti', 'Media Voti per Studente')
+            st.plotly_chart(fig_students, use_container_width=True)
         with col2:
-            st.header('Media Voti Docenti')
-            st.dataframe(mean_grades_teachers, width=500)
-
-        # Display the third DataFrame in the third column
+            st.header('')
+            st.dataframe(mean_grades_students, width=500, height=600)
+            
+        st.divider()
+        
+        col3, col4 = tab2.columns([1,3])
         with col3:
+            st.header('')
+            st.dataframe(mean_grades_teachers, width=500)
+        with col4:
+            st.header('Media Voti Docenti')
+            fig_teachers = create_bar_chart(mean_grades_teachers, 'Docente', 'Media Voti', 'Media Voti per Docente')
+            st.plotly_chart(fig_teachers, use_container_width=True)
+            
+        st.divider()
+        
+        col5, col6 = tab2.columns([3,1])
+        with col5:
             st.header('Percentuale Assenze')
+            fig_absences = create_bar_chart(
+                percentuale_assenze, 
+                'Studente', 
+                '% Assenze', 
+                'Percentuale Assenze',
+                ref_line=0.8  # Add reference line at 80%
+            )
+            st.plotly_chart(fig_absences, use_container_width=True)
+        with col6:
+            st.header('')
             st.dataframe(percentuale_assenze, width=500)
         
     
         tab2.divider()
+        
+        st.title("Student Grade Report Card")
         # Create a dropdown selector for students and teachers
         docenti = grades.columns
         studenti = grades.index
@@ -135,10 +155,30 @@ try:
         # Display the teacher dropdown in the second column
         with col2:
             select_docente = st.selectbox("Select a Teacher:", docenti)
-        
+         
         # Get the grade for the selected student and teacher
         voto = grades.loc[select_studente, select_docente]
         st.write(f"Il voto di {select_studente} con {select_docente} è : {voto}! Way To GO!")
+        
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.subheader("Dettaglio Voti")
+            student_grades = grades.loc[select_studente]
+            st.dataframe(
+                student_grades.reset_index().rename(columns={
+                    'index': 'Docente',
+                    select_studente: 'Voto'
+                }),
+                width=400,
+                height=500,
+            )
+        with col2:
+            st.subheader("Grafico Voti")
+            st.plotly_chart(create_student_grade_chart(student_grades), use_container_width=True, height=700)
+            
+        # Display the report card using Markdown
+        st.markdown(create_report_card(grades, select_studente), unsafe_allow_html=True)
+
         st.divider()
     
     with tab3:
@@ -195,3 +235,5 @@ except Exception as e:
     tab1.error(f"An error occurred: {e}")
     tab2.error(f"An error occurred: {e}")
     tab3.error(f"An error occurred: {e}")
+
+
