@@ -8,20 +8,20 @@ from dbconnector import *
 st.set_page_config(layout="wide")
 
 try:
-    tab1, tab2, tab3 = st.tabs(["Lezioni", "Valutazioni", "ITS's Heroes"])
-    # Data ETL
+    tab1, tab2, tab3, tab4 = st.tabs(["Lezioni", "Valutazioni", "Presenze", "ITS's Heroes"])
+    
+    # Data Loading
     data1 = get_calendar1()
     data = get_calendar()
     grades = get_grades()
     absences = get_absences()
         
     with tab1:
-        tab1.subheader('')
-        # Display the chart in Streamlit
-        tab1.title('Distribuzione Ore Lezioni')
-        # Create a radio button to select the data source
+        #tab1.subheader('')
         selected_data = tab1.radio("Seleziona Anno", ("1° Anno", "2° Anno"),horizontal=True)
-
+        # Create a title for the chart
+        tab1.header('Distribuzione Ore Lezioni ' + str(selected_data))
+        
         # Choose the appropriate data based on the selection
         if selected_data == "1° Anno":
             hours_by_docente = data1.groupby('Docente')['ore'].sum()
@@ -33,12 +33,13 @@ try:
 
         # Sorting the hours
         hours_by_docente = hours_by_docente.sort_values(ascending=False)
-
+        mean_hours = hours_by_docente.mean()
         # Create pie chart
         fig = go.Figure(data=[go.Pie(
             labels=hours_by_docente.index,
             values=hours_by_docente.values,
-            hole=0.5  # This creates a donut chart
+            hole=0.5,# This creates a donut chart
+
         )])
 
         # Update layout to add total hours in center
@@ -50,13 +51,21 @@ try:
                 'font_size': 22,
                 'showarrow': False
             }],
-            width=1200,
-            height=600
+            width=100,
+            height=600,
+            showlegend=True,
+            legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+            ),
         )
         
-        tab1.plotly_chart(fig)
+        tab1.plotly_chart(fig, use_container_width=True,  height=700)
+        
         tab1.divider()
-
+        
         # Create a bar plot with color-coding and legend
         # Create the bar chart
         fig_bar = go.Figure(data=[go.Bar(
@@ -67,6 +76,16 @@ try:
             name='Ore per Docente'  # Legend name
         )])
 
+        # Add mean line
+        fig_bar.add_trace(go.Scatter(
+            x=hours_by_docente.index,  # Use the same x-axis values as bars
+            y=[mean_hours] * len(hours_by_docente),  # Repeat mean value for each x point
+            mode='lines',
+            name=f'Media ({mean_hours:.2f})',
+            line=dict(color='yellow', dash='dash'),
+            opacity=0.80
+        ))
+        
         # Update layout for better readability
         fig_bar.update_layout(
             font_size=18,
@@ -75,73 +94,57 @@ try:
             width=1200,
             height=600,
             xaxis={'tickangle': 45},  # Rotate x-axis labels for better readability
-            showlegend=False,  # Show the legend
+            showlegend=True,  # Show the legend
             margin=dict(t=50, b=50, l=50, r=50),  # Increase margins
         )
         # Adjust the y-axis range to ensure labels are not cut off
         max_value = hours_by_docente.max()
         fig_bar.update_yaxes(range=[0, max_value + 10])  # Add some space above the highest bar
 
-        tab1.title('Ore per Docente')
         # Display the bar chart in Streamlit
-        tab1.plotly_chart(fig_bar)
+        tab1.plotly_chart(fig_bar, use_container_width=True,  height=700)
+        
         tab1.divider()
 
     
     with tab2:
-        tab2.subheader('')
+        
+        #tab2.subheader('')
         # Display mean grades
         mean_grades_students = grades.T.mean().sort_values(ascending=False).reset_index()
+        mean_grade = grades.T.mean().mean().round(2)   # Calculate the mean of all grades
         mean_grades_students.columns = ['Studente', 'Media Voti']  # Rename columns
 
         mean_grades_teachers = grades.mean().sort_values(ascending=False).dropna().reset_index()
+        mean_grade_techer = grades.mean().mean().round(2)
         mean_grades_teachers.columns = ['Docente', 'Media Voti']  # Rename columns
 
-        percentuale_assenze = absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index()
-        percentuale_assenze.columns = ['Studente', '% Assenze']  # Rename columns
 
         # Create visualizations using the new function
         col1, col2 = tab2.columns([3,1])
         with col1:
             st.header('Media Voti Studenti')
-            fig_students = create_bar_chart(mean_grades_students, 'Studente', 'Media Voti', 'Media Voti per Studente')
-            st.plotly_chart(fig_students, use_container_width=True)
+            fig_students = create_bar_chart(mean_grades_students, 'Studente', 'Media Voti', 'Media Voti per Studente',ref_line= mean_grade) 
+            st.plotly_chart(fig_students, use_container_width=True,  height=700)
         with col2:
             st.header('')
-            st.dataframe(mean_grades_students, width=500, height=600)
+            st.dataframe(mean_grades_students, width=400, height=500)
             
         st.divider()
         
         col3, col4 = tab2.columns([1,3])
         with col3:
             st.header('')
-            st.dataframe(mean_grades_teachers, width=500)
+            st.dataframe(mean_grades_teachers, width=400,height=500)
         with col4:
             st.header('Media Voti Docenti')
-            fig_teachers = create_bar_chart(mean_grades_teachers, 'Docente', 'Media Voti', 'Media Voti per Docente')
-            st.plotly_chart(fig_teachers, use_container_width=True)
+            fig_teachers = create_bar_chart(mean_grades_teachers, 'Docente', 'Media Voti', 'Media Voti per Docente', ref_line= mean_grade_techer)
+            st.plotly_chart(fig_teachers, use_container_width=True, height=700)
             
         st.divider()
         
-        col5, col6 = tab2.columns([3,1])
-        with col5:
-            st.header('Percentuale Assenze')
-            fig_absences = create_bar_chart(
-                percentuale_assenze, 
-                'Studente', 
-                '% Assenze', 
-                'Percentuale Assenze',
-                ref_line=0.8  # Add reference line at 80%
-            )
-            st.plotly_chart(fig_absences, use_container_width=True)
-        with col6:
-            st.header('')
-            st.dataframe(percentuale_assenze, width=500)
         
-    
-        tab2.divider()
-        
-        st.title("Student Grade Report Card")
+        st.title("Pagellina Studente")
         # Create a dropdown selector for students and teachers
         docenti = grades.columns
         studenti = grades.index
@@ -151,19 +154,24 @@ try:
         
         # Display the student dropdown in the first column
         with col1:
-            select_studente = st.selectbox("Select a Student:", studenti)
+            select_studente = st.selectbox("Selezionare Studente:", studenti)
         # Display the teacher dropdown in the second column
         with col2:
-            select_docente = st.selectbox("Select a Teacher:", docenti)
+            select_docente = st.selectbox("Selezionare Docente:", docenti)
          
         # Get the grade for the selected student and teacher
         voto = grades.loc[select_studente, select_docente]
-        st.write(f"Il voto di {select_studente} con {select_docente} è : {voto}! Way To GO!")
+        st.write(f"Il voto di {select_studente} con {select_docente} è : {voto}!")
         
-        col1, col2 = st.columns([1, 3])
+        col1, col2 = st.columns([3, 1])
+        
         with col1:
-            st.subheader("Dettaglio Voti")
+            st.subheader("Grafico Voti")
             student_grades = grades.loc[select_studente]
+            student_mean = student_grades.mean().round(2)
+            st.plotly_chart(create_student_grade_chart(student_grades), use_container_width=True, height=700)
+        with col2:
+            st.subheader("Dettaglio Voti")
             st.dataframe(
                 student_grades.reset_index().rename(columns={
                     'index': 'Docente',
@@ -172,17 +180,42 @@ try:
                 width=400,
                 height=500,
             )
-        with col2:
-            st.subheader("Grafico Voti")
-            st.plotly_chart(create_student_grade_chart(student_grades), use_container_width=True, height=700)
             
         # Display the report card using Markdown
         st.markdown(create_report_card(grades, select_studente), unsafe_allow_html=True)
 
         st.divider()
     
+    
     with tab3:
-        tab3.header('ITS\'s Heroes')
+        
+        #tab3.header('Presenze')
+        
+        percentuale_assenze = absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index()
+        percentuale_assenze.columns = ['Studente', '% Assenze']  # Rename columns
+        
+        col1, col2 = tab3.columns([3,1])
+        with col1:
+            st.header('Percentuale di Assenza Studenti')
+            fig_absences = create_bar_chart(
+                percentuale_assenze, 
+                'Studente', 
+                '% Assenze', 
+                'Percentuale Assenze',
+                ref_line=0.8  # Add reference line at 80%
+            )
+            st.plotly_chart(fig_absences, use_container_width=True, height=700)
+        with col2:
+            st.header('')
+            st.dataframe(percentuale_assenze,  width=400,height=700)
+
+        st.divider()
+        
+        
+    with tab4:
+        
+        tab4.header('ITS\'s Heroes')
+        
         col1, col2, col3 = st.columns(3)
         # metrica media peggiore
         nome_worst = str(list(grades.T.mean().sort_values().reset_index().iloc[0])[0])

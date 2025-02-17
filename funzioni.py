@@ -59,24 +59,24 @@ def create_report_card(grades, select_studente):
             student_grades = grades.loc[select_studente]
             
             report_card = f"""
-            ## Summary Statistics
+            ## Riassunto
 
-            - **Average Grade**: {student_grades.mean():.2f}
-            - **Highest Grade**: {student_grades.max():.2f}
-            - **Lowest Grade**: {student_grades.min():.2f}
+            - **Media**: {student_grades.mean():.2f}
+            - **Voto più alto**: {student_grades.max():.2f}
+            - **Voto più basso**: {student_grades.min():.2f}
 
-            ## Performance Interpretation
+            ## Commento su performance:
             """
             
             # Add performance interpretation
             if student_grades.mean() >= 85:
-                report_card += "⭐ **Excellent Performance!** Outstanding achievement across subjects. 👏"
+                report_card += "⭐ **Performance Eccellente!** Ottimi risultati tutto tondo. 👏"
             elif student_grades.mean() >= 70:
-                report_card += "📚 **Very Good Performance!** Strong academic standing. Keep up the great work! 👍"
+                report_card += "📚 **Performance Molto Buona!** Buona prestazione accademica. Continua così! 👍"
             elif student_grades.mean() >= 60:
-                report_card += "✏️ **Good Performance.** Satisfactory academic progress. Room for improvement. 📈"
+                report_card += "✏️ **Performance Buona.** Soddisfacente prestazione accademica. C'è un'ottima possibilità di miglioramento. 📈"
             else:
-                report_card += "🆘 **Needs Improvement.** Consider additional support and study strategies. 📊"
+                report_card += "🆘 **Da Migliorare.** Da considerarsi supporto esterno e cambio metodologie di studio. 📊"
             
             return report_card
         

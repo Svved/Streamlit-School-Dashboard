@@ -14,6 +14,8 @@ def get_calendar1():
     return data
 
 def get_calendar():  # Load data
+    # 1°anno
+    # data import
     data = pd.read_csv('./data/Calendario AI&DS - biennio 2023-25 - Calendario 2° anno.csv', skiprows=7)
     data = data.dropna()
     data.rename(columns={'Orario': 'inizio', 'Unnamed: 3': 'fine'}, inplace=True)
@@ -25,6 +27,7 @@ def get_calendar():  # Load data
     return data
 
 def get_grades():  # Load data
+    # import dati sui voti
     data = pd.read_excel('./data/Valutazioni_Presenze.xlsx', sheet_name='Valutazioni', skiprows=3)[:-2]
     unnamed = []
     for col in data.columns:
@@ -35,6 +38,7 @@ def get_grades():  # Load data
     return data
 
 def get_absences():
+    #import dati sulle presenze
     data = pd.read_excel('data/Valutazioni_Presenze.xlsx', sheet_name='Presenze', skiprows=2)[:-2]
     data.set_index('Cognome Nome', drop=True, inplace=True)
     data = data.dropna()
