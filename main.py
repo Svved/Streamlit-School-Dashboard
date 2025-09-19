@@ -1,5 +1,5 @@
 import streamlit as st
-import plotly.graph_objects as go
+import plotly.graph_objects as go # type: ignore
 import pandas as pd
 from funzioni import *
 from dbconnector import *
