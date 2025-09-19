@@ -5,6 +5,7 @@ import time
 import pandas as pd
 
 @st.cache_data
+
 def convert_to_float_hours(time_str):
     # Split the time string into parts
     time_parts = time_str.split(':')
@@ -59,24 +60,24 @@ def create_report_card(grades, select_studente):
             student_grades = grades.loc[select_studente]
             
             report_card = f"""
-            ## Riassunto
+            ## Sum-Up
 
-            - **Media**: {student_grades.mean():.2f}
-            - **Voto più alto**: {student_grades.max():.2f}
-            - **Voto più basso**: {student_grades.min():.2f}
+            - **Mean**: {student_grades.mean():.2f}
+            - **Highest Grade**: {student_grades.max():.2f}
+            - **Lowerst Grade**: {student_grades.min():.2f}
 
-            ## Commento su performance:
+            ## Comment on performance:
             """
             
             # Add performance interpretation
             if student_grades.mean() >= 85:
-                report_card += "⭐ **Performance Eccellente!** Ottimi risultati tutto tondo. 👏"
+                report_card += "⭐ **Excellent Performance!** 👏"
             elif student_grades.mean() >= 70:
-                report_card += "📚 **Performance Molto Buona!** Buona prestazione accademica. Continua così! 👍"
+                report_card += "📚 **Very Good Performance!** 👍"
             elif student_grades.mean() >= 60:
-                report_card += "✏️ **Performance Buona.** Soddisfacente prestazione accademica. C'è un'ottima possibilità di miglioramento. 📈"
+                report_card += "✏️ **Good Performance.**  📈"
             else:
-                report_card += "🆘 **Da Migliorare.** Da considerarsi supporto esterno e cambio metodologie di studio. 📊"
+                report_card += "🆘 **Could be better.**📊"
             
             return report_card
         
@@ -100,7 +101,7 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
             x=df[x_col],
             y=[ref_line] * len(df),
             mode='lines',
-            name=f'Limite ({ref_line})',
+            name=f'Limit {ref_line}',
             line=dict(color='red', dash='dash'),
             opacity=0.80
         ))
@@ -109,7 +110,7 @@ def create_bar_chart(df, x_col, y_col, title, ref_line=None):
             x=df[x_col],
             y=[ref_line] * len(df),
             mode='lines',
-            name=f'Media ({ref_line})',
+            name=f'Mean {ref_line}',
             line=dict(color='yellow', dash='dash'),
             opacity=0.80
         ))
@@ -159,7 +160,7 @@ def create_student_grade_chart(student_grades):
         y=df['Voto'],
         text=df['Voto'].round(2),
         textposition='outside',
-        name='Voti per Materia'
+        name='Grades by Subject'
     ))
     
     # Add mean line
@@ -167,7 +168,7 @@ def create_student_grade_chart(student_grades):
         x=df['Docente'],
         y=[mean_grade] * len(df),
         mode='lines',
-        name=f'Media ({mean_grade:.2f})',
+        name=f'Mean {mean_grade:.2f}',
         line=dict(color='yellow', dash='dash'),
         opacity=0.80
     ))
@@ -175,10 +176,10 @@ def create_student_grade_chart(student_grades):
     max_value = df['Voto'].max()
     
     fig.update_layout(
-        title='Distribuzione Voti per Materia',
+        title='Grades Distribution by Subject',
         font_size=18,
-        xaxis_title='Docenti',
-        yaxis_title='Voti',
+        xaxis_title='Teachers',
+        yaxis_title='Grades',
         width=1200,
         height=600,
         xaxis={'tickangle': 45},

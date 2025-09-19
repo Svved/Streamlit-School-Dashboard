@@ -20,7 +20,7 @@ try:
         #tab1.subheader('')
         selected_data = tab1.radio("", ("1st Year", "2nd Year"),horizontal=True)
         # Create a title for the chart
-        tab1.header('Lessons Hours Distribution ' + str(selected_data))
+        tab1.header('Hours of Lessons Distribution ' + str(selected_data))
         
         # Choose the appropriate data based on the selection
         if selected_data == "1st Year":
@@ -73,7 +73,7 @@ try:
             y=hours_by_docente.values,
             text=hours_by_docente.values,  # Show the values on top of bars
             textposition='outside',  # Automatically position the text
-            name='Hours by Teacher'  # Legend name
+            name='Hours By Teacher'  # Legend name
         )])
 
         # Add mean line
@@ -81,7 +81,7 @@ try:
             x=hours_by_docente.index,  # Use the same x-axis values as bars
             y=[mean_hours] * len(hours_by_docente),  # Repeat mean value for each x point
             mode='lines',
-            name=f'Mean {mean_hours:.2f}h',
+            name=f'Mean {mean_hours:.2f}',
             line=dict(color='yellow', dash='dash'),
             opacity=0.80
         ))
@@ -113,18 +113,18 @@ try:
         # Display mean grades
         mean_grades_students = grades.T.mean().sort_values(ascending=False).reset_index()
         mean_grade = grades.T.mean().mean().round(2)   # Calculate the mean of all grades
-        mean_grades_students.columns = ['Student', 'Grades Mean']  # Rename columns
+        mean_grades_students.columns = ['Studente', 'Media Voti']  # Rename columns
 
         mean_grades_teachers = grades.mean().sort_values(ascending=False).dropna().reset_index()
         mean_grade_techer = grades.mean().mean().round(2)
-        mean_grades_teachers.columns = ['Teacher', 'Grades Mean']  # Rename columns
+        mean_grades_teachers.columns = ['Docente', 'Media Voti']  # Rename columns
 
 
         # Create visualizations using the new function
         col1, col2 = tab2.columns([3,1])
         with col1:
             st.header('Students Grades Means')
-            fig_students = create_bar_chart(mean_grades_students, 'Student', 'Grades Mean', 'Grades Mean By Student ',ref_line= mean_grade) 
+            fig_students = create_bar_chart(mean_grades_students, 'Studente', 'Media Voti', 'Media Voti per Studente',ref_line= mean_grade) 
             st.plotly_chart(fig_students, use_container_width=True,  height=700)
         with col2:
             st.header('')
@@ -137,14 +137,14 @@ try:
             st.header('')
             st.dataframe(mean_grades_teachers, width=400,height=500)
         with col4:
-            st.header('Media Voti Docenti')
+            st.header('Teachers Grading Mean')
             fig_teachers = create_bar_chart(mean_grades_teachers, 'Docente', 'Media Voti', 'Media Voti per Docente', ref_line= mean_grade_techer)
             st.plotly_chart(fig_teachers, use_container_width=True, height=700)
             
         st.divider()
         
         
-        st.title("Pagellina Studente")
+        st.title("Student's Grade Search")
         # Create a dropdown selector for students and teachers
         docenti = grades.columns
         studenti = grades.index
@@ -154,24 +154,24 @@ try:
         
         # Display the student dropdown in the first column
         with col1:
-            select_studente = st.selectbox("Selezionare Studente:", studenti)
+            select_studente = st.selectbox("Select a Student's name:", studenti)
         # Display the teacher dropdown in the second column
         with col2:
-            select_docente = st.selectbox("Selezionare Docente:", docenti)
+            select_docente = st.selectbox("Select a Teacher's name:", docenti)
          
         # Get the grade for the selected student and teacher
         voto = grades.loc[select_studente, select_docente]
-        st.write(f"Il voto di {select_studente} con {select_docente} è : {voto}!")
+        st.write(f"The grade of {select_studente} with teacher {select_docente} is : {voto}!")
         
         col1, col2 = st.columns([3, 1])
         
         with col1:
-            st.subheader("Grafico Voti")
+            st.subheader("Grades Graph")
             student_grades = grades.loc[select_studente]
             student_mean = student_grades.mean().round(2)
             st.plotly_chart(create_student_grade_chart(student_grades), use_container_width=True, height=700)
         with col2:
-            st.subheader("Dettaglio Voti")
+            st.subheader("Grades Details")
             st.dataframe(
                 student_grades.reset_index().rename(columns={
                     'index': 'Docente',
@@ -189,22 +189,22 @@ try:
     
     with tab3:    
         percentuale_assenze = absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index()
-        percentuale_assenze.columns = ['Studente', '% Assenze']  # Rename columns
+        percentuale_assenze.columns = ['Student', '% Attendance']  # Rename columns
         
         col1, col2 = tab3.columns([3,1])
         with col1:
-            st.header('Percentuale di Assenza Studenti')
+            st.header('Percentages of Attendance')
             fig_absences = create_bar_chart(
                 percentuale_assenze, 
-                'Studente', 
-                '% Assenze', 
-                'Percentuale Assenze',
+                'Student', 
+                '% Attendance', 
+                'Attendace Percentage',
                 ref_line=0.8  # Add reference line at 80%
             )
             st.plotly_chart(fig_absences, use_container_width=True, height=700)
         with col2:
             st.header('')
-            st.dataframe(percentuale_assenze,  width=400,height=500)
+            st.dataframe(percentuale_assenze,  width=400,height=700)
 
         st.divider()
         
@@ -217,11 +217,11 @@ try:
         # metrica media peggiore
         nome_worst = str(list(grades.T.mean().sort_values().reset_index().iloc[0])[0])
         worst_mean = str(list(grades.T.mean().sort_values().reset_index().iloc[0])[1])
-        col1.metric("Media Inferiore", f"{nome_worst}", '-'+ worst_mean ,border=True )
+        col1.metric("Lowest Grades Mean", f"{nome_worst}", '-'+ worst_mean ,border=True )
         # metrica assense
         most_absent = str(list(absences['% presenza su ore svolte'].sort_values().reset_index().iloc[0])[0])
         most_absent_percent = str(list(absences['% presenza su ore svolte'].sort_values().reset_index().iloc[0])[1])
-        col3.metric("Assenze Top", most_absent,'-' + most_absent_percent,border=True)
+        col3.metric("Attendance Worst", most_absent,'-' + most_absent_percent,border=True)
         # metrica rapporto assenze più alte/media voti migliore
         # Join the grades and absences DataFrames
         absences_grades = grades.join(absences, on='Cognome Nome')
@@ -235,17 +235,17 @@ try:
         best_performer = absences_grades['performance'].idxmax()  # Get the index of the max performance
         best_performance = absences_grades['performance'].max()  # Get the max performance value
         # Display the metrics
-        col2.metric("Media/Assenza King", f"{best_performer}", f"{best_performance:.2f}", border=True)
+        col2.metric("Mean/Attendance King", f"{best_performer}", f"{best_performance:.2f}", border=True)
         
         col4, col5, col6 = tab4.columns(3)
         # metrica media peggiore
         nome_best = str(list(grades.T.mean().sort_values(ascending=False).reset_index().iloc[0])[0])
         best_mean = str(list(grades.T.mean().sort_values(ascending=False).reset_index().iloc[0])[1])
-        col4.metric("Media Migliore", f"{nome_best}", best_mean,border=True )
+        col4.metric("Mean Best", f"{nome_best}", best_mean,border=True )
         # metrica assense
         least_absent = str(list(absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index().iloc[0])[0])
         least_absent_percent = str(list(absences['% presenza su ore svolte'].sort_values(ascending=False).reset_index().iloc[0])[1])
-        col6.metric("Presenze Top", least_absent,least_absent_percent,border=True)
+        col6.metric("Attendance Top", least_absent,least_absent_percent,border=True)
         # metrica rapporto assenze più alte/media voti migliore
         # Join the grades and absences DataFrames
         absences_grades = grades.join(absences, on='Cognome Nome')
@@ -259,7 +259,7 @@ try:
         worst_performer = absences_grades['performance'].idxmin()  # Get the index of the min performance
         worst_performance = absences_grades['performance'].min()  # Get the min performance value
         # Display the metrics
-        col5.metric("Media/Assenza Jullar", f"{worst_performer}", '-' + str(worst_performance), border=True)
+        col5.metric("Mean/Attendance Jullar", f"{worst_performer}", '-' + str(worst_performance), border=True)
         
         col7, col8, col9 = tab4.columns(3)
         # professore con più ore 
@@ -269,9 +269,9 @@ try:
         highest_mean_vote= mean_grades_teachers.iloc[0][1]
         lowest_mean_prof = mean_grades_teachers.iloc[-1][0]
         lowest_mean_vote= mean_grades_teachers.iloc[-1][1]
-        col7.metric("Prof. Media + Bassa", f"{lowest_mean_prof}", '-' + str(lowest_mean_vote),border=True )
-        col8.metric("Prof. Con + Ore", f"{teacher_name_most_hours}", teacher_number_most_hours,border=True )
-        col9.metric("Prof. Media + Bassa", f"{lowest_mean_prof}", lowest_mean_vote,border=True )
+        col7.metric("Teacher Lowest Mean", f"{lowest_mean_prof}", '-' + str(lowest_mean_vote),border=True )
+        col8.metric("Teacher with most Hours", f"{teacher_name_most_hours}", teacher_number_most_hours,border=True )
+        col9.metric("Teacher Lowest Mean", f"{lowest_mean_prof}", '-'+ str(lowest_mean_vote),border=True )
         
         col10, col11, col12 = tab4.columns(3)
         teacher_name_most_hours = hours_by_docente.idxmin()
@@ -280,13 +280,14 @@ try:
         highest_mean_vote= mean_grades_teachers.iloc[0][1]
         lowest_mean_prof = mean_grades_teachers.iloc[-1][0]
         lowest_mean_vote= mean_grades_teachers.iloc[-1][1]
-        col10.metric("Prof. Media + Alta", f"{highest_mean_prof}", highest_mean_vote,border=True )
-        col12.metric("Prof. Media + Alta", f"{highest_mean_prof}", highest_mean_vote,border=True )
-        col11.metric("Prof. Con - Ore", f"{teacher_name_most_hours}", '-'+ str(teacher_number_most_hours),border=True )
+        col10.metric("Teacher Highest Mean", f"{highest_mean_prof}", highest_mean_vote,border=True )
+        col12.metric("Teacher Highest Meann", f"{highest_mean_prof}", highest_mean_vote,border=True )
+        col11.metric("Teacher with least Hours", f"{teacher_name_most_hours}", '-'+ str(teacher_number_most_hours),border=True )
 
 except Exception as e:
     tab1.error(f"An error occurred: {e}")
     tab2.error(f"An error occurred: {e}")
     tab3.error(f"An error occurred: {e}")
+    tab4.error(f"An error occurred: {e}")
 
 
