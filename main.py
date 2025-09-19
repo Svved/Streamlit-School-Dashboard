@@ -8,7 +8,7 @@ from dbconnector import *
 st.set_page_config(layout="wide")
 
 try:
-    tab1, tab2, tab3, tab4 = st.tabs(["Lezioni", "Valutazioni", "Presenze", "ITS's Heroes"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Lessons", "Grades", "Attendance", "ITS's Heroes"])
     
     # Data Loading
     data1 = get_calendar1()
@@ -18,12 +18,12 @@ try:
         
     with tab1:
         #tab1.subheader('')
-        selected_data = tab1.radio("", ("1° Anno", "2° Anno"),horizontal=True)
+        selected_data = tab1.radio("", ("1st Year", "2nd Year"),horizontal=True)
         # Create a title for the chart
-        tab1.header('Distribuzione Ore Lezioni ' + str(selected_data))
+        tab1.header('Lessons Hours Distribution ' + str(selected_data))
         
         # Choose the appropriate data based on the selection
-        if selected_data == "1° Anno":
+        if selected_data == "1st Year":
             hours_by_docente = data1.groupby('Docente')['ore'].sum()
         else:
             hours_by_docente = data.groupby('Docente')['Ore'].sum()
@@ -73,7 +73,7 @@ try:
             y=hours_by_docente.values,
             text=hours_by_docente.values,  # Show the values on top of bars
             textposition='outside',  # Automatically position the text
-            name='Ore per Docente'  # Legend name
+            name='Hours by Teacher'  # Legend name
         )])
 
         # Add mean line
@@ -81,7 +81,7 @@ try:
             x=hours_by_docente.index,  # Use the same x-axis values as bars
             y=[mean_hours] * len(hours_by_docente),  # Repeat mean value for each x point
             mode='lines',
-            name=f'Media ({mean_hours:.2f})',
+            name=f'Mean {mean_hours:.2f}h',
             line=dict(color='yellow', dash='dash'),
             opacity=0.80
         ))
@@ -89,8 +89,8 @@ try:
         # Update layout for better readability
         fig_bar.update_layout(
             font_size=18,
-            xaxis_title='Docenti',
-            yaxis_title='Ore',
+            xaxis_title='Teachers',
+            yaxis_title='Hours',
             width=1200,
             height=600,
             xaxis={'tickangle': 45},  # Rotate x-axis labels for better readability
@@ -113,18 +113,18 @@ try:
         # Display mean grades
         mean_grades_students = grades.T.mean().sort_values(ascending=False).reset_index()
         mean_grade = grades.T.mean().mean().round(2)   # Calculate the mean of all grades
-        mean_grades_students.columns = ['Studente', 'Media Voti']  # Rename columns
+        mean_grades_students.columns = ['Student', 'Grades Mean']  # Rename columns
 
         mean_grades_teachers = grades.mean().sort_values(ascending=False).dropna().reset_index()
         mean_grade_techer = grades.mean().mean().round(2)
-        mean_grades_teachers.columns = ['Docente', 'Media Voti']  # Rename columns
+        mean_grades_teachers.columns = ['Teacher', 'Grades Mean']  # Rename columns
 
 
         # Create visualizations using the new function
         col1, col2 = tab2.columns([3,1])
         with col1:
-            st.header('Media Voti Studenti')
-            fig_students = create_bar_chart(mean_grades_students, 'Studente', 'Media Voti', 'Media Voti per Studente',ref_line= mean_grade) 
+            st.header('Students Grades Means')
+            fig_students = create_bar_chart(mean_grades_students, 'Student', 'Grades Mean', 'Grades Mean By Student ',ref_line= mean_grade) 
             st.plotly_chart(fig_students, use_container_width=True,  height=700)
         with col2:
             st.header('')
